@@ -67,7 +67,7 @@ public class DualCamActivity extends Activity implements OnClickListener {
 	
 	//TAG
 	public static String TAG = "DualCamActivity";
-
+//test
 	public static final int SHOWTIME = 3000;
 	public static final int CAMERA_REQUEST = 100;
 	public static final int REQUEST_CODE = 1;
