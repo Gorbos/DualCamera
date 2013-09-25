@@ -37,16 +37,23 @@ public class CameraUtility {
 	public int lastChanceHeight = 0;
 	public int defaultWidth = 640;
 	public int defaultHeight = 480;
+	public int tempValue = 0;
 	public boolean hasDefaultSize = false;
 	
 	public CameraUtility(Context localContext){
 		context = localContext;
 	}
 
-public Camera getCameraInstance(String side, int width, int height){
+public Camera getCameraInstance(String side, int width, int height,String orientationType){
     Camera c = null;
     try {
         c = Camera.open(findCamera(side)); // attempt to get a Camera instance
+        
+//        if(orientationType == "LANDSCAPE"){
+//        	tempValue = defaultWidth;
+//        	defaultWidth = defaultHeight;
+//        	defaultHeight = tempValue;
+//        }
         
         params = c.getParameters();
         List<Camera.Size> size = params.getSupportedPreviewSizes();
@@ -54,7 +61,6 @@ public Camera getCameraInstance(String side, int width, int height){
         Log.d(TAG, "screenWidth = "+width+": screenHeight = "+height);
         Log.d(TAG, "Log size = "+size.size());
         Log.d(TAG, "Log picS = "+picS.size());
-        Camera.Size camsize = size.get(0);
         for(int i=0;i<size.size();i++)
         {
         	Log.i(TAG,"Camera.Size Cam @ "+i+" Width = "+size.get(i).width+" : Height = "+size.get(i).height);
@@ -86,8 +92,8 @@ public Camera getCameraInstance(String side, int width, int height){
         params.setExposureCompensation(0);
         //params.setPreviewSize(camsize.width,camsize.height);
         if(side == "FRONT"){
-        	params.setPreviewSize(640,480);
-        	params.setPictureSize(640,480);
+        	params.setPreviewSize(defaultWidth,defaultHeight);
+        	params.setPictureSize(defaultWidth,defaultHeight);
         	chosenWidth = defaultWidth;
     		chosenHeight = defaultHeight;
         }
@@ -141,7 +147,8 @@ public Camera getCameraInstance(String side, int width, int height){
         //params.setPictureSize(height,width);
         //params.
         //params.setJpegQuality(100);
-        //params.setRotation(90);
+        //if(orientationType == "PORTRAIT" )
+        //	params.setRotation(90);
         //cameraWidth = camsize.width;
         //cameraHeight= camsize.height;
         //Log.i(TAG,"sizesW = "+camsize.width+" : sizeH = "+camsize.height);
