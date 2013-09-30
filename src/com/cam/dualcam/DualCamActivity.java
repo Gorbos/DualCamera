@@ -17,6 +17,7 @@ import android.content.res.Configuration;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
+import android.graphics.Color;
 import android.graphics.Matrix;
 import android.graphics.Point;
 import android.graphics.drawable.BitmapDrawable;
@@ -39,6 +40,7 @@ import android.support.v4.app.FragmentTransaction;
 import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.Display;
+import android.view.Gravity;
 import android.view.Surface;
 import android.view.View;
 import android.view.Menu;
@@ -47,17 +49,22 @@ import android.view.View.OnLongClickListener;
 import android.view.ViewGroup;
 import android.view.ViewGroup.LayoutParams;
 import android.view.WindowManager;
+import android.widget.EditText;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.Button;
 import android.widget.ImageView.ScaleType;
 import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
+import android.widget.SeekBar;
+import android.widget.TextView;
 import android.widget.Toast;
-
 import android.view.OrientationEventListener;
 
 
+
+
+import com.cam.dualcam.R.string;
 import com.cam.dualcam.utility.*;
 import com.cam.dualcam.bitmap.*;
 import com.cam.dualcam.view.CameraPreview;
@@ -67,8 +74,8 @@ public class DualCamActivity extends Activity implements OnClickListener {
 	
 	//Defined variables
 	//Jap Messages
-	private String errorMessage			= "申し訳ありませんが、何かがカメラで間違っていた。";
-	private String retakeMessage		= "写真を撮りなおしますか？";
+	private String errorMessage			= "ç”³ã�—è¨³ã�‚ã‚Šã�¾ã�›ã‚“ã�Œã€�ä½•ã�‹ã�Œã‚«ãƒ¡ãƒ©ã�§é–“é�•ã�£ã�¦ã�„ã�Ÿã€‚";
+	private String retakeMessage		= "å†™çœŸã‚’æ’®ã‚Šã�ªã�Šã�—ã�¾ã�™ã�‹ï¼Ÿ";
 	
 	public static String TAG 			= "DualCamActivity";
 	private String fileName				= null;
@@ -92,8 +99,8 @@ public class DualCamActivity extends Activity implements OnClickListener {
 	public static int result = 0;
 	public static int degrees = 0;
 	public static int orientationOfPhone = 0;
-	
-	
+	public static int FontSize = 1;  //aid
+	public static String TextToShow; //aid
 	//Utility
 	public PackageCheck packageCheck;
 	public static MediaUtility mediaUtility;
@@ -111,16 +118,20 @@ public class DualCamActivity extends Activity implements OnClickListener {
 					,frontPreview
 					,previewImage;
 	
+
+	public RelativeLayout toSaveLayout;  //aid
 	public LinearLayout pictureLayout;
-	public FrameLayout  mainPreview;
+	public FrameLayout  mainPreview, 
+						createTextFrameLayout;  //aid
     public CameraPreview cameraPreview;
+    
     
     //Buttons
     public ImageView captureButton
     				,saveButton
     				,retryButton
     				,shareButton;
- 	
+
     
     
     
@@ -144,8 +155,8 @@ public class DualCamActivity extends Activity implements OnClickListener {
 		
 		mainPreview = (FrameLayout) findViewById(R.id.cumshot);
 		pictureLayout = (LinearLayout) findViewById(R.id.picLayout);
-		
-		
+		createTextFrameLayout = (FrameLayout) findViewById(R.id.createTextFrame);
+		toSaveLayout = (RelativeLayout)findViewById(R.id.createTextLayout);
 		captureButton.setOnClickListener(this);
 		saveButton.setOnClickListener(this);
 		retryButton.setOnClickListener(this);
@@ -157,9 +168,11 @@ public class DualCamActivity extends Activity implements OnClickListener {
 		backPreview.setOnLongClickListener(new OnLongClickListener(){
 			@Override
 			public boolean onLongClick(View arg0) {
+				if(mCamera != null)
 				mCamera.autoFocus(new AutoFocusCallback(){
 					@Override
 					public void onAutoFocus(boolean arg0, Camera arg1) {
+						
 						takeAShot();
 					}
 				});
@@ -171,6 +184,7 @@ public class DualCamActivity extends Activity implements OnClickListener {
 		frontPreview.setOnLongClickListener(new OnLongClickListener(){
 			@Override
 			public boolean onLongClick(View arg0) {
+				if(mCamera != null)
 				mCamera.autoFocus(new AutoFocusCallback(){
 					@Override
 					public void onAutoFocus(boolean arg0, Camera arg1) {
@@ -257,17 +271,16 @@ public void onClick(View view) {
 		try{
 			if(view.getId() == R.id.smileyButton){
 				takeAShot();
-				
 			}
 			
 			else if(view.getId() == R.id.saveButton){
 				
 				//if(isSavable)
 					try{
-						pictureLayout.buildDrawingCache();
-						saveImage(pictureLayout.getDrawingCache());
-						pictureLayout.destroyDrawingCache();
-						//saveImage();
+						toSaveLayout.buildDrawingCache();
+						saveImage(toSaveLayout.getDrawingCache());
+						toSaveLayout.destroyDrawingCache();
+						//saveImage(); 
 					}catch(Exception e){
 						Toast.makeText(getApplicationContext(),errorMessage,Field.SHOWTIME).show();
 					}
@@ -291,7 +304,7 @@ public void onClick(View view) {
 					Log.i(TAG,"ERROR = "+e.getCause());
 				}
 				//else
-					//Toast.makeText(getApplicationContext(),"画像を保存してください",Field.SHOWTIME).show();
+					//Toast.makeText(getApplicationContext(),"ç”»åƒ�ã‚’ä¿�å­˜ã�—ã�¦ã��ã� ã�•ã�„",Field.SHOWTIME).show();
 				
 			}
 			
@@ -435,7 +448,7 @@ public void onClick(View view) {
 			alertDialogBuilder
 				.setMessage(message)
 				.setCancelable(false)
-				.setPositiveButton("はい ",new DialogInterface.OnClickListener() {
+				.setPositiveButton("ã�¯ã�„ ",new DialogInterface.OnClickListener() {
 					public void onClick(DialogInterface dialog,int id) {
 						if(title == "retake"){
 							Log.i(TAG, "Initiating Retake :D");
@@ -443,7 +456,7 @@ public void onClick(View view) {
 						}
 					}
 				  })
-				.setNegativeButton("いいえ",new DialogInterface.OnClickListener() {
+				.setNegativeButton("ã�„ã�„ã�ˆ",new DialogInterface.OnClickListener() {
 					public void onClick(DialogInterface dialog,int id) {
 						
 					}
@@ -694,7 +707,31 @@ public void onClick(View view) {
 				    		isSavable = true;
 				    		saveButton.setImageResource(R.drawable.save1);
 				    		
+				    		AlertDialog.Builder alertDialogBuilderCreateText = new AlertDialog.Builder(DualCamActivity.this);
+				    	
+				    			// set title
+				    			alertDialogBuilderCreateText.setTitle("Create Text");
+				    	
+				    			// set dialog message
+				    			alertDialogBuilderCreateText
+				    				.setMessage("Are you want to create a personalized message?")
+				    				.setCancelable(false)
+				    				.setPositiveButton("Yes",new DialogInterface.OnClickListener() {
+				    					public void onClick(DialogInterface dialog,int id) {
+				    						customAlertdialog();
+				    					}
+				    				  })
+				    				.setNegativeButton("No",new DialogInterface.OnClickListener() {
+				    					public void onClick(DialogInterface dialog,int id) {
+				    						//no
+				    					}
+				    				});
+				    	
+				    			// create alert dialog
+				    			AlertDialog alert = alertDialogBuilderCreateText.create();
+				    	    	alert.show();
 				    	}
+			            
 			        }catch (Exception e) {
 			        	Log.i(TAG,"not isSaved");
 			        	Log.e(TAG,"Error accessing file: " + e.getMessage());
@@ -761,7 +798,7 @@ public void onClick(View view) {
 			       out.flush();
 			       out.close();
 			       Log.d(TAG,"Saved to "+mediaUtility.getOutputMediaFile(Field.MEDIA_TYPE_IMAGE).toString());
-			       Toast.makeText(getApplicationContext(),"写真の保存が完了しました。",Field.SHOWTIME).show();
+			       Toast.makeText(getApplicationContext(),"å†™çœŸã�®ä¿�å­˜ã�Œå®Œäº†ã�—ã�¾ã�—ã�Ÿã€‚",Field.SHOWTIME).show();
 			       isSaved = true;
 			       shareButton.setImageResource(R.drawable.share1);
 			  
@@ -778,6 +815,7 @@ public void onClick(View view) {
 
         	previewImage.setVisibility(ImageView.GONE);
 			mainPreview.setVisibility(FrameLayout.VISIBLE);
+			createTextFrameLayout.setVisibility(FrameLayout.VISIBLE);//aid
 			isSavable = false;	
 			saveButton.setImageResource(R.drawable.save2);
 			releaseCamera();
@@ -794,7 +832,7 @@ public void onClick(View view) {
 			Log.i(TAG, "b");
 			cameraPreview = new CameraPreview(getApplicationContext(), mCamera);
 			mainPreview.removeAllViews();
-			
+			//createTextFrameLayout.removeAllViews(); //aid
 			
 			RelativeLayout.LayoutParams layoutParams = (RelativeLayout.LayoutParams)mainPreview.getLayoutParams();
 			if(orientationScreen == "PORTRAIT"){
@@ -836,8 +874,7 @@ public void onClick(View view) {
 				}
 			}
 			
-			mainPreview.setLayoutParams(layoutParams);
-			
+			mainPreview.setLayoutParams(layoutParams);    
 			mainPreview.addView(cameraPreview);
 			Log.i(TAG, "2");
 	
@@ -962,4 +999,98 @@ public void onClick(View view) {
 			
 		}
 	}
+	
+	public void customAlertdialog(){
+		
+		final AlertDialog.Builder alert = new AlertDialog.Builder(this); 
+
+	    LinearLayout linear=new LinearLayout(this); 
+
+	    linear.setOrientation(1); 
+	    
+	    final EditText addedText = new EditText(this);
+	    addedText.setHint("Type text here...");
+	    
+	    final TextView textFontSize = new TextView(this); 
+	    textFontSize.setText("Font Size = " + FontSize ); 
+	    textFontSize.setPadding(10, 10, 10, 10); 
+        
+	    SeekBar seek=new SeekBar(this); 
+	    
+	    seek.setMax(50);
+	    seek.setProgress(FontSize);
+	    
+	    linear.addView(addedText); 
+	    linear.addView(seek); 
+	    linear.addView(textFontSize); 
+
+	    alert.setView(linear); 
+	    
+
+	    seek.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
+	        public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser){
+	        	textFontSize.setText("Font Size = " + FontSize ); 
+	        	FontSize = progress;
+	        }
+
+			public void onStartTrackingTouch(SeekBar arg0) {
+				// TODO Auto-generated method stub
+				
+			}
+
+			public void onStopTrackingTouch(SeekBar seekBar) {
+				// TODO Auto-generated method stub
+				
+			}
+	    });
+
+	    alert.setPositiveButton("Ok",new DialogInterface.OnClickListener() 
+	    { 
+	        public void onClick(DialogInterface dialog,int id)  
+	        {
+	        	TextToShow = addedText.getText().toString();
+	        	createAText();
+	        }
+	    }); 
+
+	    alert.setNegativeButton("Cancel",new DialogInterface.OnClickListener()  
+	    { 
+	        public void onClick(DialogInterface dialog,int id)  
+	        { 
+	           // Toast.makeText(getApplicationContext(), "Cancel Pressed",Toast.LENGTH_LONG).show(); 
+	            return; 
+	        } 
+	    }); 
+	    alert.show(); 	
+		
+	}
+	
+	
+	public void createAText(){
+		
+		// this is the method to create text on the picture
+		RelativeLayout rlv = (RelativeLayout)findViewById(R.id.buttonLayout);
+		
+		RelativeLayout.LayoutParams layoutParams = (RelativeLayout.LayoutParams)createTextFrameLayout.getLayoutParams();
+		
+		layoutParams.addRule(RelativeLayout.ABOVE);  
+		
+		TextView tv2 = new TextView(getApplicationContext()); 
+		tv2.setLayoutParams(layoutParams);
+		tv2.setTextSize(50);         
+		tv2.setGravity(Gravity.BOTTOM);   
+		tv2.setText(TextToShow);     
+		tv2.setTextSize(FontSize);
+		tv2.setTextColor(Color.RED);     
+		
+		createTextFrameLayout.addView(tv2, layoutParams); 
+		createTextFrameLayout.bringToFront();
+		Log.i(TAG, ":D = "+tv2.isShown());
+		rlv.bringToFront();  
+	
+		
+	}
+	
+	
+	
 }

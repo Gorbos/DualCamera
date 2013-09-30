@@ -26,11 +26,32 @@
            android:adjustViewBounds="false"/>
 	</RelativeLayout>
 	
+    
+		
 	<RelativeLayout
 		android:id="@+id/buttonLayout"
 	    android:layout_width="match_parent"
 	    android:layout_height="match_parent">
-	    <LinearLayout 
+	
+	    <RelativeLayout
+		android:id="@+id/createTextLayout"
+	    android:layout_width="match_parent"
+	    android:layout_height="match_parent">
+        <FrameLayout
+	       android:id="@+id/createTextFrame"
+	       android:layout_width="match_parent"
+	       android:layout_height="match_parent"
+	       android:layout_weight="1"
+	        >
+   		</FrameLayout>
+   		<ImageView
+			           android:id="@+id/test"
+			           android:layout_width="match_parent"
+			           android:layout_height="match_parent"
+					   android:visibility="gone"
+			           android:background="#ffffff" 
+			           android:adjustViewBounds="false"/>
+   		<LinearLayout 
 			android:id="@+id/picLayout"
 		    android:layout_width="match_parent"
 		    android:layout_height="match_parent"
@@ -64,6 +85,9 @@
 		           />  
 	        </LinearLayout>
 		</LinearLayout>
+		</RelativeLayout>
+		
+	    
 		
 		<ImageView
            android:id="@+id/smileyButton"
