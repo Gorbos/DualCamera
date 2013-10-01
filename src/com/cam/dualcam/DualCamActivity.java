@@ -34,6 +34,7 @@ import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
 import android.net.Uri;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.provider.MediaStore;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentTransaction;
@@ -61,16 +62,15 @@ import android.widget.TextView;
 import android.widget.Toast;
 import android.view.OrientationEventListener;
 
-
-
-
 import com.cam.dualcam.R.string;
 import com.cam.dualcam.utility.*;
 import com.cam.dualcam.bitmap.*;
+import com.cam.dualcam.color.ColorPickerDialog;
+import com.cam.dualcam.color.ColorPickerDialog.OnColorChangedListener;
 import com.cam.dualcam.view.CameraPreview;
 
 @SuppressLint("NewApi")
-public class DualCamActivity extends Activity implements OnClickListener {
+public class DualCamActivity extends Activity implements OnClickListener, OnColorChangedListener {
 	
 	//Defined variables
 	//Jap Messages
@@ -101,6 +101,8 @@ public class DualCamActivity extends Activity implements OnClickListener {
 	public static int orientationOfPhone = 0;
 	public static int FontSize = 1;  //aid
 	public static String TextToShow; //aid
+	public static int FontColor;  //aid
+	private static final String COLOR_PREFERENCE_KEY = "color";  //aid
 	//Utility
 	public PackageCheck packageCheck;
 	public static MediaUtility mediaUtility;
@@ -1020,13 +1022,28 @@ public void onClick(View view) {
 	    seek.setMax(50);
 	    seek.setProgress(FontSize);
 	    
+	    Button bt = new Button(this);
+	    bt.setText("Select a Font Color");
+	    bt.setLayoutParams(new LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT));
+	   
+	    bt.setOnClickListener(new OnClickListener(){
+	    	   public void onClick(View v) {
+	    		    int color = PreferenceManager.getDefaultSharedPreferences(
+	    	                DualCamActivity.this).getInt(COLOR_PREFERENCE_KEY,
+	    	                Color.WHITE);
+	    	        new ColorPickerDialog(DualCamActivity.this, DualCamActivity.this,
+	    	                color).show();
+	    	   }
+	    	});
+	    
+
 	    linear.addView(addedText); 
 	    linear.addView(seek); 
 	    linear.addView(textFontSize); 
-
-	    alert.setView(linear); 
+	    linear.addView(bt); 
 	    
-
+	    alert.setView(linear); 
+	     
 	    seek.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
 	        public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser){
 	        	textFontSize.setText("Font Size = " + FontSize ); 
@@ -1035,12 +1052,10 @@ public void onClick(View view) {
 
 			public void onStartTrackingTouch(SeekBar arg0) {
 				// TODO Auto-generated method stub
-				
 			}
 
 			public void onStopTrackingTouch(SeekBar seekBar) {
 				// TODO Auto-generated method stub
-				
 			}
 	    });
 
@@ -1058,6 +1073,10 @@ public void onClick(View view) {
 	        public void onClick(DialogInterface dialog,int id)  
 	        { 
 	           // Toast.makeText(getApplicationContext(), "Cancel Pressed",Toast.LENGTH_LONG).show(); 
+	        	/*Intent intent = new Intent(DualCamActivity.this,  GetColorClass.class); 
+	        	DualCamActivity.this.startActivity(intent);
+	        	DualCamActivity.this.finish();  */
+	            
 	            return; 
 	        } 
 	    }); 
@@ -1074,20 +1093,26 @@ public void onClick(View view) {
 		RelativeLayout.LayoutParams layoutParams = (RelativeLayout.LayoutParams)createTextFrameLayout.getLayoutParams();
 		
 		layoutParams.addRule(RelativeLayout.ABOVE);  
-		
 		TextView tv2 = new TextView(getApplicationContext()); 
 		tv2.setLayoutParams(layoutParams);
 		tv2.setTextSize(50);         
 		tv2.setGravity(Gravity.BOTTOM);   
 		tv2.setText(TextToShow);     
 		tv2.setTextSize(FontSize);
-		tv2.setTextColor(Color.RED);     
+		tv2.setTextColor(FontColor);     
 		
 		createTextFrameLayout.addView(tv2, layoutParams); 
 		createTextFrameLayout.bringToFront();
 		Log.i(TAG, ":D = "+tv2.isShown());
 		rlv.bringToFront();  
-	
+	}
+
+	//Change color of the font
+	@Override
+	public void colorChanged(int color) {
+		PreferenceManager.getDefaultSharedPreferences(this).edit().putInt(
+		        COLOR_PREFERENCE_KEY, color).commit();
+    	FontColor = color;
 		
 	}
 	
