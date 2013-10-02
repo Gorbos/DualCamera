@@ -41,12 +41,17 @@ import android.support.v4.app.FragmentTransaction;
 import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.Display;
+import android.view.DragEvent;
 import android.view.Gravity;
+import android.view.MotionEvent;
 import android.view.Surface;
 import android.view.View;
 import android.view.Menu;
+import android.view.View.DragShadowBuilder;
 import android.view.View.OnClickListener;
+import android.view.View.OnDragListener;
 import android.view.View.OnLongClickListener;
+import android.view.View.OnTouchListener;
 import android.view.ViewGroup;
 import android.view.ViewGroup.LayoutParams;
 import android.view.WindowManager;
@@ -134,7 +139,8 @@ public class DualCamActivity extends Activity implements OnClickListener, OnColo
     				,retryButton
     				,shareButton;
 
-    
+    private int offset_x = 0;
+    private int offset_y = 0;
     
     
     
@@ -147,11 +153,11 @@ public class DualCamActivity extends Activity implements OnClickListener, OnColo
 		mediaUtility = new MediaUtility(getApplicationContext());
 		packageCheck = new PackageCheck(getApplicationContext());
 
-		captureButton = (ImageView) findViewById(R.id.smileyButton);
+		captureButton= (ImageView) findViewById(R.id.smileyButton);
 		saveButton   = (ImageView) findViewById(R.id.saveButton);
 		retryButton  = (ImageView) findViewById(R.id.retryButton);
 		shareButton  = (ImageView) findViewById(R.id.shareButton);
-		backPreview = (ImageView) findViewById(R.id.cumPreviewBack);
+		backPreview  = (ImageView) findViewById(R.id.cumPreviewBack);
 		frontPreview = (ImageView) findViewById(R.id.cumPreviewFront);
 		previewImage = (ImageView) findViewById(R.id.previewImage);
 		
@@ -1025,7 +1031,7 @@ public void onClick(View view) {
 	    Button bt = new Button(this);
 	    bt.setText("Select a Font Color");
 	    bt.setLayoutParams(new LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT));
-	   
+
 	    bt.setOnClickListener(new OnClickListener(){
 	    	   public void onClick(View v) {
 	    		    int color = PreferenceManager.getDefaultSharedPreferences(
@@ -1036,7 +1042,6 @@ public void onClick(View view) {
 	    	   }
 	    	});
 	    
-
 	    linear.addView(addedText); 
 	    linear.addView(seek); 
 	    linear.addView(textFontSize); 
@@ -1090,16 +1095,68 @@ public void onClick(View view) {
 		// this is the method to create text on the picture
 		RelativeLayout rlv = (RelativeLayout)findViewById(R.id.buttonLayout);
 		
-		RelativeLayout.LayoutParams layoutParams = (RelativeLayout.LayoutParams)createTextFrameLayout.getLayoutParams();
+		final RelativeLayout.LayoutParams layoutParams = (RelativeLayout.LayoutParams)createTextFrameLayout.getLayoutParams();
 		
+		layoutParams.setMargins(10, 10, 10, 10);
 		layoutParams.addRule(RelativeLayout.ABOVE);  
-		TextView tv2 = new TextView(getApplicationContext()); 
-		tv2.setLayoutParams(layoutParams);
-		tv2.setTextSize(50);         
-		tv2.setGravity(Gravity.BOTTOM);   
+		final TextView tv2 = new TextView(getApplicationContext()); 
+		//tv2.setLayoutParams(layoutParams);       
+		tv2.setGravity(Gravity.TOP);   
 		tv2.setText(TextToShow);     
 		tv2.setTextSize(FontSize);
 		tv2.setTextColor(FontColor);     
+		
+		tv2.setOnTouchListener(new OnTouchListener() {
+		    @Override
+		    public boolean onTouch(View v, MotionEvent event) {
+		    	switch(event.getActionMasked())
+                {
+                        case MotionEvent.ACTION_DOWN:
+                                offset_x = (int)event.getX();
+                                offset_y = (int)event.getY();
+                                //selected_item = v;
+                                break;
+                        default:
+                                break;
+                }
+                  
+                return false;
+		    }
+		});
+		
+		
+		createTextFrameLayout.setOnTouchListener(new OnTouchListener() {
+		    @Override
+		    public boolean onTouch(View v, MotionEvent event) {
+		        switch(event.getActionMasked())
+                {
+                	case MotionEvent.ACTION_MOVE:
+                		int x = (int)event.getX() - offset_x;
+                		int y = (int)event.getY() - offset_y;
+
+                		int w = getWindowManager().getDefaultDisplay().getWidth() - 100;
+                		int h = getWindowManager().getDefaultDisplay().getHeight() - 100;
+                			
+                		if(x > w)
+                		x = w;
+                		if(y > h)
+                		y = h;
+                        
+                	FrameLayout.LayoutParams lp = new FrameLayout.LayoutParams(
+                                 new FrameLayout.MarginLayoutParams(
+                                		 FrameLayout.LayoutParams.WRAP_CONTENT,
+                                		 FrameLayout.LayoutParams.WRAP_CONTENT));
+
+                		lp.setMargins(x, y, 0, 0);
+
+                		tv2.setLayoutParams(lp);
+                                break;
+                        default:
+                                break;
+                }
+                return true;
+		    }
+		});
 		
 		createTextFrameLayout.addView(tv2, layoutParams); 
 		createTextFrameLayout.bringToFront();
@@ -1113,9 +1170,6 @@ public void onClick(View view) {
 		PreferenceManager.getDefaultSharedPreferences(this).edit().putInt(
 		        COLOR_PREFERENCE_KEY, color).commit();
     	FontColor = color;
-		
 	}
-	
-	
 	
 }
