@@ -43,6 +43,7 @@ import android.util.Log;
 import android.view.Display;
 import android.view.DragEvent;
 import android.view.Gravity;
+import android.view.KeyEvent;
 import android.view.MotionEvent;
 import android.view.Surface;
 import android.view.View;
@@ -1170,6 +1171,16 @@ public void onClick(View view) {
 		PreferenceManager.getDefaultSharedPreferences(this).edit().putInt(
 		        COLOR_PREFERENCE_KEY, color).commit();
     	FontColor = color;
+	}
+	
+	@Override
+	public boolean onKeyDown(int keyCode, KeyEvent event)  {
+	    if (keyCode == KeyEvent.KEYCODE_BACK && event.getRepeatCount() == 0) {
+	    	Log.i(TAG, "Back is PRESSED");
+	        return true;
+	    }
+
+	    return super.onKeyDown(keyCode, event);
 	}
 	
 }
